@@ -10,78 +10,82 @@ import {
   View,
 } from "react-native";
 
-const SISI_GRID = 3;
-const TOTAL_ITEM = 9;
+// Konstanta untuk grid
+const JUMLAH_KOLOM = 3;
+const TOTAL_GAMBAR = 9;
 const LEBAR_LAYAR = Dimensions.get("window").width;
-const UKURAN_KOTAK = Math.floor(LEBAR_LAYAR / SISI_GRID);
+const UKURAN_KOTAK = Math.floor(LEBAR_LAYAR / JUMLAH_KOLOM);
 
-// Buat array gambar utama dan cadangan
-const daftarGambar = Array.from({ length: TOTAL_ITEM }, (_, index) => ({
-  id: index,
-  gambarUtama: `https://picsum.photos/seed/gambar${index}/200`,
-  gambarCadangan: `https://picsum.photos/seed/cadangan${index}/200`,
+// Data gambar utama dan cadangan dengan seed unik
+const dataGambar = Array.from({ length: TOTAL_GAMBAR }, (_, i) => ({
+  id: i,
+  utama: `https://picsum.photos/seed/gbr${i}/200`,
+  cadangan: `https://picsum.photos/seed/cdg${i}/200`,
 }));
 
-const KotakGambar = ({
+// Komponen untuk 1 kotak gambar
+const GambarItem = ({
   sumber,
 }: {
-  sumber: { gambarUtama: string; gambarCadangan: string };
+  sumber: { utama: string; cadangan: string };
 }) => {
   const [pakaiCadangan, setPakaiCadangan] = useState(false);
   const [skala, setSkala] = useState(1);
-  const [gagal, setGagal] = useState(false);
+  const [gagalMuat, setGagalMuat] = useState(false);
 
-  const urlSaatIni = pakaiCadangan ? sumber.gambarCadangan : sumber.gambarUtama;
+  const urlGambar = pakaiCadangan ? sumber.cadangan : sumber.utama;
 
-  const saatKlik = () => {
-    if (gagal) return;
+  const handleTekan = () => {
+    if (gagalMuat) return;
 
-    setPakaiCadangan((nilaiSebelumnya) => !nilaiSebelumnya);
-    setSkala((nilaiLama) => Math.min(nilaiLama * 1.2, 2));
+    setPakaiCadangan((prev) => !prev);
+    setSkala((prev) => Math.min(prev * 1.2, 2));
   };
 
   return (
-    <TouchableOpacity onPress={saatKlik} style={gaya.bingkaiKotak}>
-      {gagal ? (
-        <View style={gaya.kotakError}>
-          <Text style={gaya.teksGagal}>X</Text>
+    <TouchableOpacity onPress={handleTekan} style={styles.wadahKotak}>
+      {gagalMuat ? (
+        <View style={styles.kotakError}>
+          <Text style={styles.teksError}>X</Text>
         </View>
       ) : (
         <Image
-          source={{ uri: urlSaatIni }}
-          style={[gaya.gambar, { transform: [{ scale: skala }] }]}
-          onError={() => setGagal(true)}
+          source={{ uri: urlGambar }}
+          style={[styles.gambar, { transform: [{ scale: skala }] }]}
+          onError={() => setGagalMuat(true)}
         />
       )}
     </TouchableOpacity>
   );
 };
 
-const GaleriGrid = () => {
+// Komponen utama grid
+const GaleriGambar = () => {
   return (
-    <SafeAreaView style={gaya.latar}>
-      <ScrollView contentContainerStyle={gaya.kontainerGrid}>
-        {daftarGambar.map((item) => (
-          <KotakGambar key={item.id} sumber={item} />
+    <SafeAreaView style={styles.latar}>
+      <ScrollView contentContainerStyle={styles.grid}>
+        {dataGambar.map((item) => (
+          <GambarItem key={item.id} sumber={item} />
         ))}
       </ScrollView>
     </SafeAreaView>
   );
 };
 
-export default GaleriGrid;
+export default GaleriGambar;
 
-const gaya = StyleSheet.create({
+// Gaya
+const styles = StyleSheet.create({
   latar: {
     flex: 1,
-    backgroundColor: "#121212",
+    backgroundColor: "#101010",
   },
-  kontainerGrid: {
+  grid: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "flex-start",
   },
-  bingkaiKotak: {
+  wadahKotak: {
     width: UKURAN_KOTAK,
     height: UKURAN_KOTAK,
     padding: 2,
@@ -89,18 +93,19 @@ const gaya = StyleSheet.create({
   gambar: {
     width: "100%",
     height: "100%",
-    borderRadius: 10,
+    borderRadius: 8,
   },
   kotakError: {
     width: "100%",
     height: "100%",
-    backgroundColor: "#3a3a3a",
+    backgroundColor: "#444",
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 10,
+    borderRadius: 8,
   },
-  teksGagal: {
-    color: "#ccc",
+  teksError: {
+    color: "#eee",
     fontSize: 18,
+    fontWeight: "bold",
   },
 });
