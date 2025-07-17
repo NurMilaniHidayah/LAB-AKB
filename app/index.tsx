@@ -1,66 +1,106 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import {
+  Dimensions,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-export default function TampilanBentuk() {
+const SISI_GRID = 3;
+const TOTAL_ITEM = 9;
+const LEBAR_LAYAR = Dimensions.get("window").width;
+const UKURAN_KOTAK = Math.floor(LEBAR_LAYAR / SISI_GRID);
+
+// Buat array gambar utama dan cadangan
+const daftarGambar = Array.from({ length: TOTAL_ITEM }, (_, index) => ({
+  id: index,
+  gambarUtama: `https://picsum.photos/seed/gambar${index}/200`,
+  gambarCadangan: `https://picsum.photos/seed/cadangan${index}/200`,
+}));
+
+const KotakGambar = ({
+  sumber,
+}: {
+  sumber: { gambarUtama: string; gambarCadangan: string };
+}) => {
+  const [pakaiCadangan, setPakaiCadangan] = useState(false);
+  const [skala, setSkala] = useState(1);
+  const [gagal, setGagal] = useState(false);
+
+  const urlSaatIni = pakaiCadangan ? sumber.gambarCadangan : sumber.gambarUtama;
+
+  const saatKlik = () => {
+    if (gagal) return;
+
+    setPakaiCadangan((nilaiSebelumnya) => !nilaiSebelumnya);
+    setSkala((nilaiLama) => Math.min(nilaiLama * 1.2, 2));
+  };
+
   return (
-    <View style={gaya.lappaUtama}>
-      {/* Bentuk segitiga */}
-      <View style={gaya.tiluTanggo} />
-
-      {/* Persegi panjang dengan nama */}
-      <View style={gaya.kotakNamma}>
-        <Text style={gaya.teksIsina}>Muliana</Text>
-      </View>
-
-      {/* Bentuk pil dengan NIM */}
-      <View style={gaya.pilInduk}>
-        <Text style={gaya.teksIsina}>105841103822</Text>
-      </View>
-    </View>
+    <TouchableOpacity onPress={saatKlik} style={gaya.bingkaiKotak}>
+      {gagal ? (
+        <View style={gaya.kotakError}>
+          <Text style={gaya.teksGagal}>X</Text>
+        </View>
+      ) : (
+        <Image
+          source={{ uri: urlSaatIni }}
+          style={[gaya.gambar, { transform: [{ scale: skala }] }]}
+          onError={() => setGagal(true)}
+        />
+      )}
+    </TouchableOpacity>
   );
-}
+};
+
+const GaleriGrid = () => {
+  return (
+    <SafeAreaView style={gaya.latar}>
+      <ScrollView contentContainerStyle={gaya.kontainerGrid}>
+        {daftarGambar.map((item) => (
+          <KotakGambar key={item.id} sumber={item} />
+        ))}
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+export default GaleriGrid;
 
 const gaya = StyleSheet.create({
-  lappaUtama: {
+  latar: {
     flex: 1,
+    backgroundColor: "#121212",
+  },
+  kontainerGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "flex-start",
+  },
+  bingkaiKotak: {
+    width: UKURAN_KOTAK,
+    height: UKURAN_KOTAK,
+    padding: 2,
+  },
+  gambar: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 10,
+  },
+  kotakError: {
+    width: "100%",
+    height: "100%",
+    backgroundColor: "#3a3a3a",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f0f4f8",
-    gap: 30,
+    borderRadius: 10,
   },
-  tiluTanggo: {
-    width: 0,
-    height: 0,
-    backgroundColor: "transparent",
-    borderStyle: "solid",
-    borderLeftWidth: 70,
-    borderRightWidth: 70,
-    borderBottomWidth: 110,
-    borderLeftColor: "transparent",
-    borderRightColor: "transparent",
-    borderBottomColor: "#a83279", // warna ungu merah
-  },
-  kotakNamma: {
-    width: 280,
-    height: 65,
-    backgroundColor: "#0e7490", // biru laut tua
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 8,
-    paddingHorizontal: 10,
-  },
-  pilInduk: {
-    width: 280,
-    height: 65,
-    backgroundColor: "#f59e0b", // orange terang
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 40,
-    paddingHorizontal: 10,
-  },
-  teksIsina: {
-    color: "#fff",
+  teksGagal: {
+    color: "#ccc",
     fontSize: 18,
-    fontWeight: "600",
   },
 });
